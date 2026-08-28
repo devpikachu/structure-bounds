@@ -5,6 +5,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import dev.detpikachu.structurebounds.Permissions;
 import dev.detpikachu.structurebounds.player.PlayerSettings;
+import dev.detpikachu.structurebounds.render.BoundsManager;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import org.jetbrains.annotations.ApiStatus;
@@ -38,6 +39,7 @@ public final class PlayerBoundsCommand {
         final var message = updated.isEnabled() ? "Structure bounds shown." : "Structure bounds hidden.";
 
         updated.save(player);
+        BoundsManager.refresh(player);
         player.sendMessage(text(message, GRAY));
 
         return 1;

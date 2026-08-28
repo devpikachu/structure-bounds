@@ -1,12 +1,12 @@
 package dev.detpikachu.structurebounds.render;
 
 import dev.detpikachu.structurebounds.StructureBounds;
-import dev.detpikachu.structurebounds.config.Options;
 import dev.detpikachu.structurebounds.player.PlayerSettings;
+import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 
@@ -15,26 +15,14 @@ import static dev.detpikachu.structurebounds.StructureBounds.logDebug;
 @ApiStatus.Internal
 public final class BoundsManager {
 
-    private static final long PERIOD_TICKS = 10L;
-
     private static final Map<UUID, BoundsSession> SESSIONS = new HashMap<>();
 
-    public static void start(StructureBounds plugin) {
-        plugin.getServer()
-                .getGlobalRegionScheduler()
-                .runAtFixedRate(plugin, task -> tick(plugin), PERIOD_TICKS, PERIOD_TICKS);
+    public static void stop() {
+        final var plugin = StructureBounds.getInstance();
 
-        logDebug(
-                "Bounds task started every {} tick(s), scan radius {} chunk(s), budget {} box(es) per player.",
-                PERIOD_TICKS,
-                Options.getInstance().getScanRadiusChunks(),
-                Options.getInstance().getMaxBoxesPerPlayer());
-    }
-
-    public static void stop(StructureBounds plugin) {
         plugin.getServer().getGlobalRegionScheduler().cancelTasks(plugin);
 
-        logDebug("Bounds task stopped, clearing {} session(s).", SESSIONS.size());
+        logDebug("Bounds stopping, clearing {} session(s).", SESSIONS.size());
 
         for (final var player : plugin.getServer().getOnlinePlayers()) {
             final var session = SESSIONS.get(player.getUniqueId());
@@ -47,36 +35,57 @@ public final class BoundsManager {
         SESSIONS.clear();
     }
 
-    private static void tick(StructureBounds plugin) {
-        final var server = plugin.getServer();
-        final var enabled = new HashSet<UUID>();
+    public static void refresh(Player player) {
+        final var settings = PlayerSettings.load(player);
 
-        for (final var player : server.getOnlinePlayers()) {
-            final var settings = PlayerSettings.load(player);
-
-            if (!settings.isEnabled()) {
-                continue;
-            }
-
-            enabled.add(player.getUniqueId());
-            SESSIONS.computeIfAbsent(player.getUniqueId(), uuid -> new BoundsSession())
-                    .refresh(player, settings);
+        if (!settings.isEnabled()) {
+            clearSession(player);
+            return;
         }
 
-        SESSIONS.entrySet().removeIf(entry -> {
-            if (enabled.contains(entry.getKey())) {
-                return false;
-            }
+        SESSIONS.computeIfAbsent(player.getUniqueId(), uuid -> new BoundsSession())
+                .refresh(player, settings);
+    }
 
-            final var player = server.getPlayer(entry.getKey());
+    public static void schedule(Player player, Location destination) {
+        final var session = SESSIONS.get(player.getUniqueId());
 
-            if (player != null) {
-                entry.getValue().clear(player);
-            }
+        if (session == null || !session.claimRefresh(destination)) {
+            return;
+        }
 
-            logDebug("Bounds session dropped for {}.", entry.getKey());
+        final var plugin = StructureBounds.getInstance();
+        plugin.getServer().getGlobalRegionScheduler().run(plugin, task -> refreshScheduled(player));
+    }
 
-            return true;
-        });
+    public static void drop(Player player) {
+        if (SESSIONS.remove(player.getUniqueId()) != null) {
+            logDebug("Bounds session dropped for {} on quit.", player.getName());
+        }
+    }
+
+    private static void clearSession(Player player) {
+        final var session = SESSIONS.remove(player.getUniqueId());
+
+        if (session == null) {
+            return;
+        }
+
+        session.clear(player);
+        logDebug("Bounds session cleared for {}.", player.getName());
+    }
+
+    private static void refreshScheduled(Player player) {
+        final var session = SESSIONS.get(player.getUniqueId());
+
+        if (session == null) {
+            return;
+        }
+
+        session.releaseRefresh();
+
+        if (player.isOnline()) {
+            refresh(player);
+        }
     }
 }

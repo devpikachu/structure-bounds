@@ -9,7 +9,9 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import org.bukkit.Location;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.ApiStatus;
@@ -32,8 +34,9 @@ public final class BoundsSession {
 
     private @Nullable ResourceKey<Level> lastWorld;
     private @Nullable PlayerSettings lastSettings;
-    private long lastChunk;
+    private long lastChunk = ChunkPos.INVALID_CHUNK_POS;
     private boolean wasTruncated;
+    private boolean isRefreshScheduled;
 
     public void refresh(Player player, PlayerSettings settings) {
         final var handle = ((CraftPlayer) player).getHandle();
@@ -61,9 +64,26 @@ public final class BoundsSession {
         this.update(player, settings, StructureScanner.scan(player));
     }
 
+    public boolean claimRefresh(Location destination) {
+        final var chunk = ChunkPos.asLong(destination.getBlockX() >> 4, destination.getBlockZ() >> 4);
+
+        if (this.isRefreshScheduled || chunk == this.lastChunk) {
+            return false;
+        }
+
+        this.isRefreshScheduled = true;
+
+        return true;
+    }
+
+    public void releaseRefresh() {
+        this.isRefreshScheduled = false;
+    }
+
     public void forget() {
         this.shown.clear();
         this.lastWorld = null;
+        this.lastChunk = ChunkPos.INVALID_CHUNK_POS;
         this.wasTruncated = false;
     }
 

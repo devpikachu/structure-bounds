@@ -4,6 +4,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.detpikachu.structurebounds.player.PlayerSettings;
+import dev.detpikachu.structurebounds.render.BoundsManager;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import org.jetbrains.annotations.ApiStatus;
@@ -30,6 +31,7 @@ public final class PlayerBoundsAllBoxesCommand {
                 : "Boxes past the threshold are hidden again.";
 
         updated.save(player);
+        BoundsManager.refresh(player);
         player.sendMessage(text(message, GRAY));
 
         return 1;

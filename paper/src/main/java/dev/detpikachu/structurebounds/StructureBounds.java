@@ -2,6 +2,7 @@ package dev.detpikachu.structurebounds;
 
 import dev.detpikachu.structurebounds.commands.CommandTree;
 import dev.detpikachu.structurebounds.config.Options;
+import dev.detpikachu.structurebounds.listeners.PaperListener;
 import dev.detpikachu.structurebounds.render.BoundsManager;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
@@ -39,17 +40,17 @@ public final class StructureBounds extends JavaPlugin {
         Options.deserialize(this.getConfig());
 
         this.registerListeners();
-        BoundsManager.start(this);
 
         this.logStartupSummary();
     }
 
     @Override
     public void onDisable() {
-        BoundsManager.stop(this);
+        BoundsManager.stop();
     }
 
     private void registerListeners() {
+        this.getServer().getPluginManager().registerEvents(new PaperListener(), this);
         this.getLifecycleManager()
                 .registerEventHandler(LifecycleEvents.COMMANDS, commands -> CommandTree.register(commands.registrar()));
     }

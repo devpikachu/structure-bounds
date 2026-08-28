@@ -6,6 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.detpikachu.structurebounds.config.Options;
 import dev.detpikachu.structurebounds.player.PlayerSettings;
+import dev.detpikachu.structurebounds.render.BoundsManager;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import org.jetbrains.annotations.ApiStatus;
@@ -38,6 +39,7 @@ public final class PlayerBoundsBoxesCommand {
         final var updated = PlayerSettings.load(player).withBoxThreshold(count);
 
         updated.save(player);
+        BoundsManager.refresh(player);
         player.sendMessage(text("Structures of up to ")
                 .append(text(count))
                 .append(text(" boxes now draw in full."))
