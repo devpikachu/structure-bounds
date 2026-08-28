@@ -40,9 +40,7 @@ public final class PlayerBoundsMaxPiecesCommand {
         final var updated = PlayerSettings.load(player).withBoxThreshold(count);
 
         requireRefreshReady(player, updated);
-
-        updated.save(player);
-        BoundsManager.reconcile(player);
+        BoundsManager.apply(player, updated);
         player.sendMessage(text("Structures now draw up to ")
                 .append(text(count))
                 .append(text(" pieces."))

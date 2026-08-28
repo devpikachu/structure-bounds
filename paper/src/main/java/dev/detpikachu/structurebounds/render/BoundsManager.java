@@ -35,6 +35,11 @@ public final class BoundsManager {
         SESSIONS.clear();
     }
 
+    public static void apply(Player player, PlayerSettings settings) {
+        settings.save(player);
+        reconcile(player);
+    }
+
     public static void reconcile(Player player) {
         final var settings = PlayerSettings.load(player);
 

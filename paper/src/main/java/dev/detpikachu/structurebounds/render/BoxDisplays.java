@@ -22,8 +22,13 @@ public final class BoxDisplays {
 
     public static final int EDGES_PER_BOX = 12;
 
+    private static final int BARS_PER_AXIS = EDGES_PER_BOX / 3;
+
     private static final float THICKNESS = 0.1f;
     private static final float HALF_THICKNESS = THICKNESS / 2f;
+
+    private static final float NO_ROTATION = 0.0f;
+    private static final int NO_ENTITY_DATA = 0;
 
     public static List<BoxEdge> build(ServerLevel level, BoundingBox bounds, BoxColor color) {
         final var center = center(bounds);
@@ -45,45 +50,72 @@ public final class BoxDisplays {
     }
 
     private static List<Transformation> edgeTransforms(BoundingBox bounds) {
-        final var spanX = bounds.maxX() - bounds.minX() + 1;
-        final var spanY = bounds.maxY() - bounds.minY() + 1;
-        final var spanZ = bounds.maxZ() - bounds.minZ() + 1;
-        final var halfX = spanX / 2.0f;
-        final var halfY = spanY / 2.0f;
-        final var halfZ = spanZ / 2.0f;
+        final var span = new Span(
+                bounds.maxX() - bounds.minX() + 1,
+                bounds.maxY() - bounds.minY() + 1,
+                bounds.maxZ() - bounds.minZ() + 1);
         final var transforms = new ArrayList<Transformation>(EDGES_PER_BOX);
 
-        for (var firstSign = -1; firstSign <= 1; firstSign += 2) {
-            for (var secondSign = -1; secondSign <= 1; secondSign += 2) {
-                transforms.add(barTransform(
-                        -halfX - HALF_THICKNESS,
-                        firstSign * halfY - HALF_THICKNESS,
-                        secondSign * halfZ - HALF_THICKNESS,
-                        spanX + THICKNESS,
-                        THICKNESS,
-                        THICKNESS));
-                transforms.add(barTransform(
-                        firstSign * halfX - HALF_THICKNESS,
-                        -halfY + HALF_THICKNESS,
-                        secondSign * halfZ - HALF_THICKNESS,
-                        THICKNESS,
-                        spanY - THICKNESS,
-                        THICKNESS));
-                transforms.add(barTransform(
-                        firstSign * halfX - HALF_THICKNESS,
-                        secondSign * halfY - HALF_THICKNESS,
-                        -halfZ + HALF_THICKNESS,
-                        THICKNESS,
-                        THICKNESS,
-                        spanZ - THICKNESS));
-            }
-        }
+        transforms.addAll(xBars(span));
+        transforms.addAll(yBars(span));
+        transforms.addAll(zBars(span));
 
         return transforms;
     }
 
-    private static Transformation barTransform(float x, float y, float z, float scaleX, float scaleY, float scaleZ) {
-        return new Transformation(new Vector3f(x, y, z), null, new Vector3f(scaleX, scaleY, scaleZ), null);
+    private static List<Transformation> xBars(Span span) {
+        final var bars = new ArrayList<Transformation>(BARS_PER_AXIS);
+
+        for (var signY = -1; signY <= 1; signY += 2) {
+            for (var signZ = -1; signZ <= 1; signZ += 2) {
+                bars.add(barTransform(
+                        new Vector3f(
+                                -span.halfX() - HALF_THICKNESS,
+                                signY * span.halfY() - HALF_THICKNESS,
+                                signZ * span.halfZ() - HALF_THICKNESS),
+                        new Vector3f(span.x() + THICKNESS, THICKNESS, THICKNESS)));
+            }
+        }
+
+        return bars;
+    }
+
+    private static List<Transformation> yBars(Span span) {
+        final var bars = new ArrayList<Transformation>(BARS_PER_AXIS);
+
+        for (var signX = -1; signX <= 1; signX += 2) {
+            for (var signZ = -1; signZ <= 1; signZ += 2) {
+                bars.add(barTransform(
+                        new Vector3f(
+                                signX * span.halfX() - HALF_THICKNESS,
+                                -span.halfY() + HALF_THICKNESS,
+                                signZ * span.halfZ() - HALF_THICKNESS),
+                        new Vector3f(THICKNESS, span.y() - THICKNESS, THICKNESS)));
+            }
+        }
+
+        return bars;
+    }
+
+    private static List<Transformation> zBars(Span span) {
+        final var bars = new ArrayList<Transformation>(BARS_PER_AXIS);
+
+        for (var signX = -1; signX <= 1; signX += 2) {
+            for (var signY = -1; signY <= 1; signY += 2) {
+                bars.add(barTransform(
+                        new Vector3f(
+                                signX * span.halfX() - HALF_THICKNESS,
+                                signY * span.halfY() - HALF_THICKNESS,
+                                -span.halfZ() + HALF_THICKNESS),
+                        new Vector3f(THICKNESS, THICKNESS, span.z() - THICKNESS)));
+            }
+        }
+
+        return bars;
+    }
+
+    private static Transformation barTransform(Vector3f offset, Vector3f scale) {
+        return new Transformation(offset, null, scale, null);
     }
 
     private static BoxEdge edge(
@@ -96,21 +128,39 @@ public final class BoxDisplays {
         display.setBrightnessOverride(Brightness.FULL_BRIGHT);
         display.setViewRange(viewRange);
 
-        final var addPacket = new ClientboundAddEntityPacket(
+        final var dataPacket = new ClientboundSetEntityDataPacket(
+                display.getId(), Objects.requireNonNull(display.getEntityData().getNonDefaultValues()));
+
+        return new BoxEdge(display.getId(), addPacket(display, center), dataPacket);
+    }
+
+    private static ClientboundAddEntityPacket addPacket(Display.BlockDisplay display, Vec3 center) {
+        return new ClientboundAddEntityPacket(
                 display.getId(),
                 display.getUUID(),
                 center.x,
                 center.y,
                 center.z,
-                0.0f,
-                0.0f,
+                NO_ROTATION,
+                NO_ROTATION,
                 EntityType.BLOCK_DISPLAY,
-                0,
+                NO_ENTITY_DATA,
                 Vec3.ZERO,
-                0.0);
-        final var dataPacket = new ClientboundSetEntityDataPacket(
-                display.getId(), Objects.requireNonNull(display.getEntityData().getNonDefaultValues()));
+                NO_ROTATION);
+    }
 
-        return new BoxEdge(display.getId(), addPacket, dataPacket);
+    private record Span(float x, float y, float z) {
+
+        private float halfX() {
+            return this.x / 2f;
+        }
+
+        private float halfY() {
+            return this.y / 2f;
+        }
+
+        private float halfZ() {
+            return this.z / 2f;
+        }
     }
 }

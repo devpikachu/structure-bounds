@@ -40,9 +40,7 @@ public final class PlayerBoundsCommand {
         final var message = updated.isEnabled() ? "Structure bounds shown." : "Structure bounds hidden.";
 
         requireRefreshReady(player, updated);
-
-        updated.save(player);
-        BoundsManager.reconcile(player);
+        BoundsManager.apply(player, updated);
         player.sendMessage(text(message, GRAY));
 
         return 1;

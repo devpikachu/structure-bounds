@@ -32,9 +32,7 @@ public final class PlayerBoundsAllPiecesCommand {
                 : "Pieces past the threshold are hidden again.";
 
         requireRefreshReady(player, updated);
-
-        updated.save(player);
-        BoundsManager.reconcile(player);
+        BoundsManager.apply(player, updated);
         player.sendMessage(text(message, GRAY));
 
         return 1;
