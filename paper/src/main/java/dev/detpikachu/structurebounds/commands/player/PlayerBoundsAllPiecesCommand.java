@@ -14,12 +14,12 @@ import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.GRAY;
 
 @ApiStatus.Internal
-public final class PlayerBoundsAllBoxesCommand {
+public final class PlayerBoundsAllPiecesCommand {
 
-    private static final String CMD_ALL_BOXES = "allboxes";
+    private static final String CMD_ALL_PIECES = "all-pieces";
 
     public static LiteralArgumentBuilder<CommandSourceStack> construct() {
-        return Commands.literal(CMD_ALL_BOXES).executes(PlayerBoundsAllBoxesCommand::execute);
+        return Commands.literal(CMD_ALL_PIECES).executes(PlayerBoundsAllPiecesCommand::execute);
     }
 
     private static int execute(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
@@ -27,8 +27,8 @@ public final class PlayerBoundsAllBoxesCommand {
         final var settings = PlayerSettings.load(player);
         final var updated = settings.withShowAllBoxes(!settings.showAllBoxes());
         final var message = updated.showAllBoxes()
-                ? "Every box is drawn, whatever the threshold."
-                : "Boxes past the threshold are hidden again.";
+                ? "Every piece is drawn, whatever the threshold."
+                : "Pieces past the threshold are hidden again.";
 
         updated.save(player);
         BoundsManager.refresh(player);

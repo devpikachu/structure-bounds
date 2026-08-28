@@ -111,11 +111,7 @@ public final class BoundsSession {
         }
 
         for (final var structure : structures) {
-            if (!showsPieces(structure, settings)) {
-                continue;
-            }
-
-            for (final var piece : structure.pieces()) {
+            for (final var piece : piecesFor(structure, settings)) {
                 keys.add(new BoxKey(piece.bounds(), piece.isStart() ? BoxColor.START : BoxColor.PIECE));
             }
         }
@@ -123,8 +119,14 @@ public final class BoundsSession {
         return keys;
     }
 
-    private static boolean showsPieces(ScannedStructure structure, PlayerSettings settings) {
-        return settings.showAllBoxes() || structure.pieces().size() + 1 <= settings.boxThreshold();
+    private static List<ScannedStructure.Piece> piecesFor(ScannedStructure structure, PlayerSettings settings) {
+        final var pieces = structure.pieces();
+
+        if (settings.showAllBoxes() || pieces.size() < settings.boxThreshold()) {
+            return pieces;
+        }
+
+        return pieces.subList(0, settings.boxThreshold());
     }
 
     private void update(Player player, PlayerSettings settings, List<ScannedStructure> structures) {

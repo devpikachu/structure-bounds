@@ -12,7 +12,7 @@ public record PlayerSettings(boolean isEnabled, int boxThreshold, boolean showAl
     public static final int MIN_BOX_THRESHOLD = 0;
 
     private static final boolean DEFAULT_ENABLED = false;
-    private static final int DEFAULT_BOX_THRESHOLD = 16;
+    private static final int DEFAULT_BOX_THRESHOLD = 32;
     private static final boolean DEFAULT_SHOW_ALL_BOXES = false;
 
     private static final NamespacedKey KEY_ENABLED = new NamespacedKey(StructureBounds.getInstance(), "enabled");

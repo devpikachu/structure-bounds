@@ -17,9 +17,9 @@ import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.GRAY;
 
 @ApiStatus.Internal
-public final class PlayerBoundsBoxesCommand {
+public final class PlayerBoundsMaxPiecesCommand {
 
-    private static final String CMD_BOXES = "boxes";
+    private static final String CMD_MAX_PIECES = "max-pieces";
 
     private static final String ARG_COUNT = "count";
 
@@ -28,9 +28,9 @@ public final class PlayerBoundsBoxesCommand {
                         ARG_COUNT,
                         IntegerArgumentType.integer(
                                 MIN_BOX_THRESHOLD, Options.getInstance().getMaxBoxesPerPlayer()))
-                .executes(PlayerBoundsBoxesCommand::execute);
+                .executes(PlayerBoundsMaxPiecesCommand::execute);
 
-        return Commands.literal(CMD_BOXES).then(count);
+        return Commands.literal(CMD_MAX_PIECES).then(count);
     }
 
     private static int execute(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
@@ -40,9 +40,9 @@ public final class PlayerBoundsBoxesCommand {
 
         updated.save(player);
         BoundsManager.refresh(player);
-        player.sendMessage(text("Structures of up to ")
+        player.sendMessage(text("Structures now draw up to ")
                 .append(text(count))
-                .append(text(" boxes now draw in full."))
+                .append(text(" pieces."))
                 .color(GRAY));
 
         return 1;

@@ -38,7 +38,7 @@ public final class StructureScanner {
         }
 
         final var scanned = starts.stream()
-                .map(StructureScanner::describe)
+                .map(start -> describe(start, position))
                 .sorted(Comparator.comparingDouble(structure -> distanceSquared(position, structure.bounds())))
                 .toList();
 
@@ -82,13 +82,15 @@ public final class StructureScanner {
         }
     }
 
-    private static ScannedStructure describe(StructureStart start) {
+    private static ScannedStructure describe(StructureStart start, Vec3 position) {
         final var pieces = start.getPieces();
         final var described = new ArrayList<ScannedStructure.Piece>(pieces.size());
 
         for (var i = 0; i < pieces.size(); i++) {
             described.add(new ScannedStructure.Piece(pieces.get(i).getBoundingBox(), i == 0));
         }
+
+        described.sort(Comparator.comparingDouble(piece -> distanceSquared(position, piece.bounds())));
 
         return new ScannedStructure(start.getBoundingBox(), described);
     }

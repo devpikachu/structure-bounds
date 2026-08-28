@@ -23,8 +23,8 @@ public final class PlayerBoundsCommand {
         return Commands.literal(CMD_BOUNDS)
                 .requires(PlayerBoundsCommand::isAllowed)
                 .executes(PlayerBoundsCommand::execute)
-                .then(PlayerBoundsAllBoxesCommand.construct())
-                .then(PlayerBoundsBoxesCommand.construct())
+                .then(PlayerBoundsAllPiecesCommand.construct())
+                .then(PlayerBoundsMaxPiecesCommand.construct())
                 .build();
     }
 
