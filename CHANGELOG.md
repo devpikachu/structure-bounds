@@ -10,8 +10,11 @@ tags the release; pushing that tag makes CI publish the section as the GitHub re
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-08-28
+
 ### Added
 
 - **Initial release:** the initial version of the plugin.
 
 [unreleased]: https://github.com/devpikachu/structure-bounds/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/devpikachu/structure-bounds/releases/tag/v0.1.0
