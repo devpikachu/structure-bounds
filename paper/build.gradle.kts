@@ -3,7 +3,6 @@ import net.ltgt.gradle.errorprone.errorprone
 plugins {
     id("java-library")
     id("com.diffplug.spotless")
-    id("com.gradleup.shadow")
     id("io.papermc.paperweight.userdev")
     id("net.ltgt.errorprone")
     id("xyz.jpenilla.run-paper")
@@ -39,14 +38,6 @@ dependencies {
 }
 
 tasks {
-    jar {
-        enabled = false
-    }
-
-    shadowJar {
-        archiveClassifier = ""
-    }
-
     runServer {
         minecraftVersion(minecraftVersion)
         jvmArgs("-Xms2G", "-Xmx2G", "-Dcom.mojang.eula.agree=true")

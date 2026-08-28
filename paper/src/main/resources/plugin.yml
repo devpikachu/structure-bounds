@@ -7,3 +7,8 @@ website: https://github.com/devpikachu/structure-bounds
 main: dev.detpikachu.structurebounds.StructureBounds
 api-version: '${apiVersion}'
 load: POSTWORLD
+
+permissions:
+  structure-bounds.use:
+    description: Allows a player to toggle the visibility of structure bounds.
+    default: true

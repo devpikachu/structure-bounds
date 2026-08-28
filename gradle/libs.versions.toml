@@ -16,7 +16,6 @@ jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "j
 
 [plugins]
 spotless = { id = "com.diffplug.spotless", version = "8.10.0" }
-shadow = { id = "com.gradleup.shadow", version = "9.6.1" }
 paperweight-userdev = { id = "io.papermc.paperweight.userdev", version = "2.0.0-beta.22" }
 errorprone = { id = "net.ltgt.errorprone", version = "5.1.0" }
 run-paper = { id = "xyz.jpenilla.run-paper", version = "3.1.0" }
