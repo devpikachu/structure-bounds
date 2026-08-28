@@ -16,6 +16,9 @@ import static dev.detpikachu.structurebounds.StructureBounds.logDebug;
 public final class BoundsManager {
 
     private static final Map<UUID, BoundsSession> SESSIONS = new HashMap<>();
+    private static final Map<UUID, Integer> LAST_COMMAND_TICKS = new HashMap<>();
+
+    private static final int COMMAND_COOLDOWN_TICKS = 40;
 
     public static void stop() {
         final var plugin = StructureBounds.getInstance();
@@ -33,6 +36,7 @@ public final class BoundsManager {
         }
 
         SESSIONS.clear();
+        LAST_COMMAND_TICKS.clear();
     }
 
     public static void refresh(Player player) {
@@ -58,7 +62,22 @@ public final class BoundsManager {
         plugin.getServer().getGlobalRegionScheduler().run(plugin, task -> refreshScheduled(player));
     }
 
+    public static boolean claimCommandRefresh(Player player) {
+        final var tick = StructureBounds.getInstance().getServer().getCurrentTick();
+        final var last = LAST_COMMAND_TICKS.get(player.getUniqueId());
+
+        if (last != null && tick - last < COMMAND_COOLDOWN_TICKS) {
+            return false;
+        }
+
+        LAST_COMMAND_TICKS.put(player.getUniqueId(), tick);
+
+        return true;
+    }
+
     public static void drop(Player player) {
+        LAST_COMMAND_TICKS.remove(player.getUniqueId());
+
         if (SESSIONS.remove(player.getUniqueId()) != null) {
             logDebug("Bounds session dropped for {} on quit.", player.getName());
         }

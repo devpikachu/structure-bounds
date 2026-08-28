@@ -15,4 +15,10 @@ public final class CommandErrors {
                     .serialize(text(
                             "Command must be executed by or as a real player. Executing from console without /execute isn't supported. Executing as entities other than players is not supported.",
                             RED)));
+
+    public static final SimpleCommandExceptionType ERR_REFRESH_TOO_SOON =
+            new SimpleCommandExceptionType(MessageComponentSerializer.message()
+                    .serialize(text(
+                            "Structure bounds were redrawn a moment ago. Please wait a couple of seconds before trying again.",
+                            RED)));
 }

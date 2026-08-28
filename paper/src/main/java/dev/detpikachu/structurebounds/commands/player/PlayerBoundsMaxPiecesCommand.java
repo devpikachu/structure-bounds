@@ -12,6 +12,7 @@ import io.papermc.paper.command.brigadier.Commands;
 import org.jetbrains.annotations.ApiStatus;
 
 import static dev.detpikachu.structurebounds.commands.CommandGuards.requireExecutor;
+import static dev.detpikachu.structurebounds.commands.CommandGuards.requireRefreshReady;
 import static dev.detpikachu.structurebounds.player.PlayerSettings.MIN_BOX_THRESHOLD;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.GRAY;
@@ -37,6 +38,8 @@ public final class PlayerBoundsMaxPiecesCommand {
         final var player = requireExecutor(context);
         final var count = context.getArgument(ARG_COUNT, int.class);
         final var updated = PlayerSettings.load(player).withBoxThreshold(count);
+
+        requireRefreshReady(player, updated);
 
         updated.save(player);
         BoundsManager.refresh(player);

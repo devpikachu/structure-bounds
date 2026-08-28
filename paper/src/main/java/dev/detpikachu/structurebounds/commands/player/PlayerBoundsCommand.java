@@ -11,6 +11,7 @@ import io.papermc.paper.command.brigadier.Commands;
 import org.jetbrains.annotations.ApiStatus;
 
 import static dev.detpikachu.structurebounds.commands.CommandGuards.requireExecutor;
+import static dev.detpikachu.structurebounds.commands.CommandGuards.requireRefreshReady;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.GRAY;
 
@@ -37,6 +38,8 @@ public final class PlayerBoundsCommand {
         final var settings = PlayerSettings.load(player);
         final var updated = settings.withEnabled(!settings.isEnabled());
         final var message = updated.isEnabled() ? "Structure bounds shown." : "Structure bounds hidden.";
+
+        requireRefreshReady(player, settings);
 
         updated.save(player);
         BoundsManager.refresh(player);

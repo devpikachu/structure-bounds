@@ -10,6 +10,7 @@ import io.papermc.paper.command.brigadier.Commands;
 import org.jetbrains.annotations.ApiStatus;
 
 import static dev.detpikachu.structurebounds.commands.CommandGuards.requireExecutor;
+import static dev.detpikachu.structurebounds.commands.CommandGuards.requireRefreshReady;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.GRAY;
 
@@ -29,6 +30,8 @@ public final class PlayerBoundsAllPiecesCommand {
         final var message = updated.showAllBoxes()
                 ? "Every piece is drawn, whatever the threshold."
                 : "Pieces past the threshold are hidden again.";
+
+        requireRefreshReady(player, settings);
 
         updated.save(player);
         BoundsManager.refresh(player);
