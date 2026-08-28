@@ -4,4 +4,4 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.jetbrains.annotations.ApiStatus;
 
 @ApiStatus.Internal
-public record BoxKey(BoundingBox bounds, BoxColor color, boolean isGlowing) implements DisplayKey {}
+public record LabelKey(BoundingBox bounds, String text) implements DisplayKey {}

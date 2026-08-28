@@ -3,6 +3,7 @@ package dev.detpikachu.structurebounds.render;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -14,11 +15,11 @@ import java.util.Map;
 import static dev.detpikachu.structurebounds.StructureBounds.logDebug;
 
 @ApiStatus.Internal
-public final class DrawnBoxes {
+public final class DrawnDisplays {
 
-    private final Map<BoxKey, IntList> shown = new HashMap<>();
+    private final Map<DisplayKey, IntList> shown = new HashMap<>();
 
-    public void refresh(ServerPlayer handle, List<BoxKey> selected) {
+    public void refresh(ServerPlayer handle, List<DisplayKey> selected) {
         this.removeStale(handle, selected);
         this.spawnMissing(handle, selected);
     }
@@ -43,7 +44,7 @@ public final class DrawnBoxes {
         this.shown.clear();
     }
 
-    private void removeStale(ServerPlayer handle, List<BoxKey> selected) {
+    private void removeStale(ServerPlayer handle, List<DisplayKey> selected) {
         final var keep = new HashSet<>(selected);
         final var removed = new IntArrayList();
 
@@ -62,7 +63,7 @@ public final class DrawnBoxes {
         }
     }
 
-    private void spawnMissing(ServerPlayer handle, List<BoxKey> selected) {
+    private void spawnMissing(ServerPlayer handle, List<DisplayKey> selected) {
         var spawned = 0;
 
         for (final var key : selected) {
@@ -70,12 +71,13 @@ public final class DrawnBoxes {
                 continue;
             }
 
-            final var ids = new IntArrayList(BoxDisplays.EDGES_PER_BOX);
+            final var displays = build(handle.level(), key);
+            final var ids = new IntArrayList(displays.size());
 
-            for (final var edge : BoxDisplays.build(handle.level(), key)) {
-                handle.connection.send(edge.addPacket());
-                handle.connection.send(edge.dataPacket());
-                ids.add(edge.entityId());
+            for (final var display : displays) {
+                handle.connection.send(display.addPacket());
+                handle.connection.send(display.dataPacket());
+                ids.add(display.entityId());
             }
 
             this.shown.put(key, ids);
@@ -84,10 +86,17 @@ public final class DrawnBoxes {
 
         if (spawned > 0) {
             logDebug(
-                    "Bounds for {}: spawned {} box(es), {} now shown.",
+                    "Bounds for {}: spawned {} display(s), {} now shown.",
                     handle.getScoreboardName(),
                     spawned,
                     this.shown.size());
         }
+    }
+
+    private static List<SpawnedDisplay> build(ServerLevel level, DisplayKey key) {
+        return switch (key) {
+            case BoxKey box -> BoxDisplays.build(level, box);
+            case LabelKey label -> List.of(LabelDisplays.build(level, label));
+        };
     }
 }

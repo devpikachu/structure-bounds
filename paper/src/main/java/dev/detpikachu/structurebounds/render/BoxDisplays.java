@@ -2,8 +2,6 @@ package dev.detpikachu.structurebounds.render;
 
 import com.mojang.math.Transformation;
 import dev.detpikachu.structurebounds.config.Options;
-import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
-import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Brightness;
 import net.minecraft.world.entity.Display;
@@ -15,25 +13,21 @@ import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @ApiStatus.Internal
 public final class BoxDisplays {
 
-    public static final int EDGES_PER_BOX = 12;
+    private static final int EDGES_PER_BOX = 12;
 
     private static final int BARS_PER_AXIS = EDGES_PER_BOX / 3;
 
     private static final float THICKNESS = 0.1f;
     private static final float HALF_THICKNESS = THICKNESS / 2f;
 
-    private static final float NO_ROTATION = 0.0f;
-    private static final int NO_ENTITY_DATA = 0;
-
-    public static List<BoxEdge> build(ServerLevel level, BoxKey key) {
+    public static List<SpawnedDisplay> build(ServerLevel level, BoxKey key) {
         final var center = center(key.bounds());
         final var viewRange = Options.getInstance().getScanRadiusChunks();
-        final var edges = new ArrayList<BoxEdge>(EDGES_PER_BOX);
+        final var edges = new ArrayList<SpawnedDisplay>(EDGES_PER_BOX);
 
         for (final var transform : edgeTransforms(key.bounds())) {
             edges.add(edge(level, key, viewRange, center, transform));
@@ -118,7 +112,8 @@ public final class BoxDisplays {
         return new Transformation(offset, null, scale, null);
     }
 
-    private static BoxEdge edge(ServerLevel level, BoxKey key, float viewRange, Vec3 center, Transformation transform) {
+    private static SpawnedDisplay edge(
+            ServerLevel level, BoxKey key, float viewRange, Vec3 center, Transformation transform) {
         final var display = new Display.BlockDisplay(EntityType.BLOCK_DISPLAY, level);
 
         display.setPos(center.x, center.y, center.z);
@@ -128,25 +123,7 @@ public final class BoxDisplays {
         display.setViewRange(viewRange);
         display.setGlowingTag(key.isGlowing());
 
-        final var dataPacket = new ClientboundSetEntityDataPacket(
-                display.getId(), Objects.requireNonNull(display.getEntityData().getNonDefaultValues()));
-
-        return new BoxEdge(display.getId(), addPacket(display, center), dataPacket);
-    }
-
-    private static ClientboundAddEntityPacket addPacket(Display.BlockDisplay display, Vec3 center) {
-        return new ClientboundAddEntityPacket(
-                display.getId(),
-                display.getUUID(),
-                center.x,
-                center.y,
-                center.z,
-                NO_ROTATION,
-                NO_ROTATION,
-                EntityType.BLOCK_DISPLAY,
-                NO_ENTITY_DATA,
-                Vec3.ZERO,
-                NO_ROTATION);
+        return SpawnedDisplay.of(display);
     }
 
     private record Span(float x, float y, float z) {

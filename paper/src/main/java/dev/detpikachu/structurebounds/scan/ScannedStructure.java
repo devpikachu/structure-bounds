@@ -2,6 +2,7 @@ package dev.detpikachu.structurebounds.scan;
 
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
@@ -9,5 +10,6 @@ import java.util.List;
 public record ScannedStructure(BoundingBox bounds, List<Piece> pieces) {
 
     @ApiStatus.Internal
-    public record Piece(BoundingBox bounds, boolean isStart) {}
+    public record Piece(
+            BoundingBox bounds, boolean isStart, @Nullable String name) {}
 }

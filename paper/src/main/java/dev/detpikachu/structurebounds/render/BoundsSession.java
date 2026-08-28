@@ -23,7 +23,7 @@ import static net.kyori.adventure.text.format.NamedTextColor.GRAY;
 @ApiStatus.Internal
 public final class BoundsSession {
 
-    private final DrawnBoxes drawn = new DrawnBoxes();
+    private final DrawnDisplays drawn = new DrawnDisplays();
 
     private @Nullable ScannedStructure held;
     private @Nullable ResourceKey<Level> lastWorld;
@@ -49,11 +49,12 @@ public final class BoundsSession {
         this.lastSettings = settings;
 
         logDebug(
-                "Bounds pass for {} at chunk {}, threshold {}, all boxes {}.",
+                "Bounds pass for {} at chunk {}, threshold {}, all boxes {}, labels {}.",
                 handle.getScoreboardName(),
                 handle.chunkPosition(),
                 settings.boxThreshold(),
-                settings.showAllBoxes());
+                settings.showAllBoxes(),
+                settings.showLabels());
 
         this.draw(player, handle, settings);
     }
@@ -117,16 +118,18 @@ public final class BoundsSession {
 
     private void draw(Player player, ServerPlayer handle, PlayerSettings settings) {
         final var budget = Options.getInstance().getMaxBoxesPerPlayer();
-        final var selection = BoxSelector.select(this.structures(handle), settings, budget, this.held != null);
+        final var selection =
+                BoxSelector.select(this.structures(handle), settings, budget, this.held != null, handle.position());
 
         logDebug(
-                "Bounds for {}: {} box(es) wanted, {} drawn of a {} budget.",
+                "Bounds for {}: {} box(es) wanted, {} drawn of a {} budget, {} label(s).",
                 handle.getScoreboardName(),
                 selection.wantedCount(),
                 selection.boxes().size(),
-                budget);
+                budget,
+                selection.labels().size());
 
-        this.drawn.refresh(handle, selection.boxes());
+        this.drawn.refresh(handle, selection.displays());
 
         if (selection.isTruncated() && !this.wasTruncated) {
             player.sendMessage(text("Too many structure bounds nearby. Showing the closest ones only.", GRAY));
