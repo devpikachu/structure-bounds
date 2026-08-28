@@ -1,0 +1,9 @@
+name: structure-bounds
+version: '${version}'
+description: Bounds for Minecraft's generated structures.
+author: Andrei "detpikachu" Hava
+website: https://github.com/devpikachu/structure-bounds
+
+main: dev.detpikachu.structurebounds.StructureBounds
+api-version: '${apiVersion}'
+load: POSTWORLD

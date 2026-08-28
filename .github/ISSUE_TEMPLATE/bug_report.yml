@@ -1,0 +1,90 @@
+name: Bug report
+description: Report something the plugin gets wrong
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Plugin behaviour depends on what else is running on the server, so the version and plugin list fields below
+        are what turn a report into something that can be reproduced.
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Structure Bounds version
+      description: The version in the JAR filename.
+      placeholder: 0.1.0
+    validations:
+      required: true
+
+  - type: input
+    id: server-version
+    attributes:
+      label: Server version
+      description: The full output of /version.
+      placeholder: Purpur version 1.21.11-...
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What the plugin did, and what you were doing when it did it.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: plugins
+    attributes:
+      label: Other plugins installed
+      description: The output of /plugins.
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console log
+      description: Errors or stack traces from around the time it happened. Link to a paste for anything long.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Configuration
+      description: Your config.yml.
+      render: yaml
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before filing
+      options:
+        - label: I searched the existing issues and this is not a duplicate
+          required: true
+        - label: I am on the latest release
+          required: true

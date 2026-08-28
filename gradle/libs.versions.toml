@@ -1,0 +1,22 @@
+[versions]
+java = "21"
+minecraft = "1.21.11"
+
+errorprone = "2.50.0"
+nullaway = "0.14.0"
+jspecify = "1.0.1"
+jetbrains-annotations = "26.1.0"
+
+[libraries]
+errorprone-annotations = { module = "com.google.errorprone:error_prone_annotations", version.ref = "errorprone" }
+errorprone-core = { module = "com.google.errorprone:error_prone_core", version.ref = "errorprone" }
+nullaway = { module = "com.uber.nullaway:nullaway", version.ref = "nullaway" }
+jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
+jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
+
+[plugins]
+spotless = { id = "com.diffplug.spotless", version = "8.10.0" }
+shadow = { id = "com.gradleup.shadow", version = "9.6.1" }
+paperweight-userdev = { id = "io.papermc.paperweight.userdev", version = "2.0.0-beta.22" }
+errorprone = { id = "net.ltgt.errorprone", version = "5.1.0" }
+run-paper = { id = "xyz.jpenilla.run-paper", version = "3.1.0" }
