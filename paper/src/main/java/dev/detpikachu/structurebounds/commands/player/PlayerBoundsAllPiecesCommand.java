@@ -31,7 +31,7 @@ public final class PlayerBoundsAllPiecesCommand {
                 ? "Every piece is drawn, whatever the threshold."
                 : "Pieces past the threshold are hidden again.";
 
-        requireRefreshReady(player, settings);
+        requireRefreshReady(player, updated);
 
         updated.save(player);
         BoundsManager.refresh(player);
