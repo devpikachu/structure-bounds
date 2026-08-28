@@ -42,7 +42,7 @@ public final class PlayerBoundsCommand {
         requireRefreshReady(player, updated);
 
         updated.save(player);
-        BoundsManager.refresh(player);
+        BoundsManager.reconcile(player);
         player.sendMessage(text(message, GRAY));
 
         return 1;

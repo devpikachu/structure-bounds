@@ -42,7 +42,7 @@ public final class PlayerBoundsMaxPiecesCommand {
         requireRefreshReady(player, updated);
 
         updated.save(player);
-        BoundsManager.refresh(player);
+        BoundsManager.reconcile(player);
         player.sendMessage(text("Structures now draw up to ")
                 .append(text(count))
                 .append(text(" pieces."))

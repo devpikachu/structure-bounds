@@ -1,5 +1,6 @@
 package dev.detpikachu.structurebounds.listeners;
 
+import dev.detpikachu.structurebounds.commands.CommandCooldown;
 import dev.detpikachu.structurebounds.render.BoundsManager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -17,17 +18,18 @@ public final class PaperListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        BoundsManager.refresh(event.getPlayer());
+        BoundsManager.reconcile(event.getPlayer());
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         BoundsManager.drop(event.getPlayer());
+        CommandCooldown.drop(event.getPlayer());
     }
 
     @EventHandler
     public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
-        BoundsManager.refresh(event.getPlayer());
+        BoundsManager.reconcile(event.getPlayer());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

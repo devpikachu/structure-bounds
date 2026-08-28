@@ -1,5 +1,6 @@
 package dev.detpikachu.structurebounds;
 
+import dev.detpikachu.structurebounds.commands.CommandCooldown;
 import dev.detpikachu.structurebounds.commands.CommandTree;
 import dev.detpikachu.structurebounds.config.Options;
 import dev.detpikachu.structurebounds.listeners.PaperListener;
@@ -47,6 +48,7 @@ public final class StructureBounds extends JavaPlugin {
     @Override
     public void onDisable() {
         BoundsManager.stop();
+        CommandCooldown.dropAll();
     }
 
     private void registerListeners() {
