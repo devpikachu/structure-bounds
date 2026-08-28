@@ -10,23 +10,25 @@ import java.util.List;
 @ApiStatus.Internal
 public final class BoxSelector {
 
-    public static Selection select(List<ScannedStructure> structures, PlayerSettings settings, int budget) {
-        final var wanted = wantedBoxes(structures, settings);
+    public static Selection select(
+            List<ScannedStructure> structures, PlayerSettings settings, int budget, boolean isGlowing) {
+        final var wanted = wantedBoxes(structures, settings, isGlowing);
         final var isTruncated = wanted.size() > budget;
 
         return new Selection(isTruncated ? wanted.subList(0, budget) : wanted, wanted.size(), isTruncated);
     }
 
-    private static List<BoxKey> wantedBoxes(List<ScannedStructure> structures, PlayerSettings settings) {
+    private static List<BoxKey> wantedBoxes(
+            List<ScannedStructure> structures, PlayerSettings settings, boolean isGlowing) {
         final var keys = new ArrayList<BoxKey>();
 
         for (final var structure : structures) {
-            keys.add(new BoxKey(structure.bounds(), BoxColor.STRUCTURE));
+            keys.add(new BoxKey(structure.bounds(), BoxColor.STRUCTURE, isGlowing));
         }
 
         for (final var structure : structures) {
             for (final var piece : shownPieces(structure, settings)) {
-                keys.add(new BoxKey(piece.bounds(), piece.isStart() ? BoxColor.START : BoxColor.PIECE));
+                keys.add(new BoxKey(piece.bounds(), piece.isStart() ? BoxColor.START : BoxColor.PIECE, false));
             }
         }
 

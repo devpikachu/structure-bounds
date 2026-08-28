@@ -72,7 +72,7 @@ public final class DrawnBoxes {
 
             final var ids = new IntArrayList(BoxDisplays.EDGES_PER_BOX);
 
-            for (final var edge : BoxDisplays.build(handle.level(), key.bounds(), key.color())) {
+            for (final var edge : BoxDisplays.build(handle.level(), key)) {
                 handle.connection.send(edge.addPacket());
                 handle.connection.send(edge.dataPacket());
                 ids.add(edge.entityId());

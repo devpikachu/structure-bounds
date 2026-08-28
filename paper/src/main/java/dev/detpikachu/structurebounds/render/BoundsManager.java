@@ -40,6 +40,15 @@ public final class BoundsManager {
         reconcile(player);
     }
 
+    public static IsolateOutcome isolate(Player player) {
+        final var outcome = SESSIONS.computeIfAbsent(player.getUniqueId(), uuid -> new BoundsSession())
+                .isolate(player);
+
+        reconcile(player);
+
+        return outcome;
+    }
+
     public static void reconcile(Player player) {
         final var settings = PlayerSettings.load(player);
 

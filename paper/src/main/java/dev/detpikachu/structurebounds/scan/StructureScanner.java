@@ -50,6 +50,14 @@ public final class StructureScanner {
         return scanned;
     }
 
+    public static ScannedStructure sortPieces(ScannedStructure structure, Vec3 position) {
+        final var sorted = new ArrayList<>(structure.pieces());
+
+        sorted.sort(Comparator.comparingDouble(piece -> distanceSquared(position, piece.bounds())));
+
+        return new ScannedStructure(structure.bounds(), sorted);
+    }
+
     private static void collectFromChunk(ServerLevel level, int chunkX, int chunkZ, Set<StructureStart> starts) {
         final var chunk = level.getChunk(chunkX, chunkZ, ChunkStatus.STRUCTURE_REFERENCES, false);
 
@@ -88,9 +96,7 @@ public final class StructureScanner {
             described.add(new ScannedStructure.Piece(pieces.get(i).getBoundingBox(), i == 0));
         }
 
-        described.sort(Comparator.comparingDouble(piece -> distanceSquared(position, piece.bounds())));
-
-        return new ScannedStructure(start.getBoundingBox(), described);
+        return sortPieces(new ScannedStructure(start.getBoundingBox(), described), position);
     }
 
     private static double distanceSquared(Vec3 position, BoundingBox bounds) {

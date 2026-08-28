@@ -21,4 +21,8 @@ public final class CommandErrors {
                     .serialize(text(
                             "Structure bounds were redrawn a moment ago. Please wait a couple of seconds before trying again.",
                             RED)));
+
+    public static final SimpleCommandExceptionType ERR_BOUNDS_HIDDEN =
+            new SimpleCommandExceptionType(MessageComponentSerializer.message()
+                    .serialize(text("Structure bounds are hidden. Run /bounds to show them first.", RED)));
 }

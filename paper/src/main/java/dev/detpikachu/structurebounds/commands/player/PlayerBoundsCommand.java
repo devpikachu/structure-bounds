@@ -25,6 +25,7 @@ public final class PlayerBoundsCommand {
                 .requires(PlayerBoundsCommand::isAllowed)
                 .executes(PlayerBoundsCommand::execute)
                 .then(PlayerBoundsAllPiecesCommand.construct())
+                .then(PlayerBoundsIsolateCommand.construct())
                 .then(PlayerBoundsMaxPiecesCommand.construct())
                 .build();
     }

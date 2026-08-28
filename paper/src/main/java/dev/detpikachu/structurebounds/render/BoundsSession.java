@@ -2,6 +2,7 @@ package dev.detpikachu.structurebounds.render;
 
 import dev.detpikachu.structurebounds.config.Options;
 import dev.detpikachu.structurebounds.player.PlayerSettings;
+import dev.detpikachu.structurebounds.scan.ScannedStructure;
 import dev.detpikachu.structurebounds.scan.StructureScanner;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
@@ -13,6 +14,8 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.Nullable;
 
+import java.util.List;
+
 import static dev.detpikachu.structurebounds.StructureBounds.logDebug;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.GRAY;
@@ -22,6 +25,7 @@ public final class BoundsSession {
 
     private final DrawnBoxes drawn = new DrawnBoxes();
 
+    private @Nullable ScannedStructure held;
     private @Nullable ResourceKey<Level> lastWorld;
     private @Nullable PlayerSettings lastSettings;
     private long lastChunk = ChunkPos.INVALID_CHUNK_POS;
@@ -54,6 +58,29 @@ public final class BoundsSession {
         this.draw(player, handle, settings);
     }
 
+    public IsolateOutcome isolate(Player player) {
+        if (this.held != null) {
+            this.held = null;
+            this.lastChunk = ChunkPos.INVALID_CHUNK_POS;
+
+            return IsolateOutcome.RELEASED;
+        }
+
+        final var handle = ((CraftPlayer) player).getHandle();
+        final var containing = StructureScanner.scan(handle).stream()
+                .filter(structure -> structure.bounds().isInside(handle.blockPosition()))
+                .toList();
+
+        if (containing.isEmpty()) {
+            return IsolateOutcome.NOT_INSIDE;
+        }
+
+        this.held = containing.getFirst();
+        this.lastChunk = ChunkPos.INVALID_CHUNK_POS;
+
+        return containing.size() > 1 ? IsolateOutcome.HELD_NEAREST : IsolateOutcome.HELD;
+    }
+
     public boolean claimRefresh(Location destination) {
         final var chunk = chunkKey(destination.getBlockX(), destination.getBlockZ());
 
@@ -77,6 +104,7 @@ public final class BoundsSession {
 
     public void reset() {
         this.drawn.reset();
+        this.held = null;
         this.lastWorld = null;
         this.lastSettings = null;
         this.lastChunk = ChunkPos.INVALID_CHUNK_POS;
@@ -89,7 +117,7 @@ public final class BoundsSession {
 
     private void draw(Player player, ServerPlayer handle, PlayerSettings settings) {
         final var budget = Options.getInstance().getMaxBoxesPerPlayer();
-        final var selection = BoxSelector.select(StructureScanner.scan(handle), settings, budget);
+        final var selection = BoxSelector.select(this.structures(handle), settings, budget, this.held != null);
 
         logDebug(
                 "Bounds for {}: {} box(es) wanted, {} drawn of a {} budget.",
@@ -105,5 +133,15 @@ public final class BoundsSession {
         }
 
         this.wasTruncated = selection.isTruncated();
+    }
+
+    private List<ScannedStructure> structures(ServerPlayer handle) {
+        final var held = this.held;
+
+        if (held == null) {
+            return StructureScanner.scan(handle);
+        }
+
+        return List.of(StructureScanner.sortPieces(held, handle.position()));
     }
 }

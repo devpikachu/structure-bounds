@@ -30,13 +30,13 @@ public final class BoxDisplays {
     private static final float NO_ROTATION = 0.0f;
     private static final int NO_ENTITY_DATA = 0;
 
-    public static List<BoxEdge> build(ServerLevel level, BoundingBox bounds, BoxColor color) {
-        final var center = center(bounds);
+    public static List<BoxEdge> build(ServerLevel level, BoxKey key) {
+        final var center = center(key.bounds());
         final var viewRange = Options.getInstance().getScanRadiusChunks();
         final var edges = new ArrayList<BoxEdge>(EDGES_PER_BOX);
 
-        for (final var transform : edgeTransforms(bounds)) {
-            edges.add(edge(level, color, viewRange, center, transform));
+        for (final var transform : edgeTransforms(key.bounds())) {
+            edges.add(edge(level, key, viewRange, center, transform));
         }
 
         return edges;
@@ -118,15 +118,15 @@ public final class BoxDisplays {
         return new Transformation(offset, null, scale, null);
     }
 
-    private static BoxEdge edge(
-            ServerLevel level, BoxColor color, float viewRange, Vec3 center, Transformation transform) {
+    private static BoxEdge edge(ServerLevel level, BoxKey key, float viewRange, Vec3 center, Transformation transform) {
         final var display = new Display.BlockDisplay(EntityType.BLOCK_DISPLAY, level);
 
         display.setPos(center.x, center.y, center.z);
-        display.setBlockState(color.getBlockState());
+        display.setBlockState(key.color().getBlockState());
         display.setTransformation(transform);
         display.setBrightnessOverride(Brightness.FULL_BRIGHT);
         display.setViewRange(viewRange);
+        display.setGlowingTag(key.isGlowing());
 
         final var dataPacket = new ClientboundSetEntityDataPacket(
                 display.getId(), Objects.requireNonNull(display.getEntityData().getNonDefaultValues()));
