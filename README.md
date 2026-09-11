@@ -44,8 +44,8 @@ Drop `structure-bounds-<version>.jar` into the server's `plugins/` directory and
 | `/bounds max-pieces <count>` | Sets how many pieces one structure may draw, up to `max-boxes-per-player`  | `structure-bounds.use` |
 | `/bounds show-labels`        | Draws each piece's name above it, or hides them                            | `structure-bounds.use` |
 
-A command that redraws is limited to one every two seconds, and refuses with a message until the wait is out. Hiding
-the outlines is never refused.
+A command that redraws is limited to one every two seconds, and refuses with a message until the wait is out. Hiding the
+outlines is never refused.
 
 ## Configuration
 
@@ -59,8 +59,7 @@ the outlines is never refused.
 
 Out-of-range values are clamped back to their default, with a warning in the console.
 
-A player who is sent the cap keeps the boxes nearest them, loses the rest, and is told once that the view was cut
-short.
+A player who is sent the cap keeps the boxes nearest them, loses the rest, and is told once that the view was cut short.
 
 ## Permissions
 
@@ -74,6 +73,19 @@ Everything here is gated behind the `debug` configuration flag, which is off by 
 
 Every scan, redraw, dropped session and refused command is logged to the console, naming the player and the counts
 involved. Nothing a player sees changes.
+
+## Verifying a release
+
+Every published file is signed with cosign keyless, so there is no public key to fetch: the certificate itself records
+that this repository's release workflow produced the file, at a tag. Each one has a `.sigstore.json` bundle beside it.
+
+```sh
+cosign verify-blob \
+  --bundle structure-bounds-0.1.0.jar.sigstore.json \
+  --certificate-identity-regexp '^https://github\.com/devpikachu/structure-bounds/\.github/workflows/release\.yml@refs/tags/' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  structure-bounds-0.1.0.jar
+```
 
 ## Contributing
 
