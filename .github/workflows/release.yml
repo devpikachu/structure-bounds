@@ -9,12 +9,15 @@ permissions:
 
 jobs:
   release:
+    if: github.repository == 'devpikachu/structure-bounds'
     runs-on: ubuntu-latest
     permissions:
       contents: write # draft the GitHub release
       id-token: write # OIDC token Fulcio exchanges for cosign's short-lived certificate
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Resolve the version
         run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"

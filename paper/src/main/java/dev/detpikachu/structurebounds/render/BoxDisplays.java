@@ -38,16 +38,13 @@ public final class BoxDisplays {
 
     private static Vec3 center(BoundingBox bounds) {
         return new Vec3(
-                bounds.minX() + (bounds.maxX() - bounds.minX() + 1) / 2.0,
-                bounds.minY() + (bounds.maxY() - bounds.minY() + 1) / 2.0,
-                bounds.minZ() + (bounds.maxZ() - bounds.minZ() + 1) / 2.0);
+                bounds.minX() + bounds.getXSpan() / 2.0,
+                bounds.minY() + bounds.getYSpan() / 2.0,
+                bounds.minZ() + bounds.getZSpan() / 2.0);
     }
 
     private static List<Transformation> edgeTransforms(BoundingBox bounds) {
-        final var span = new Span(
-                bounds.maxX() - bounds.minX() + 1,
-                bounds.maxY() - bounds.minY() + 1,
-                bounds.maxZ() - bounds.minZ() + 1);
+        final var span = new Span(bounds.getXSpan(), bounds.getYSpan(), bounds.getZSpan());
         final var transforms = new ArrayList<Transformation>(EDGES_PER_BOX);
 
         transforms.addAll(xBars(span));

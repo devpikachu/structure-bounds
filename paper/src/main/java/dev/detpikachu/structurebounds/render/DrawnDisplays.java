@@ -2,11 +2,15 @@ package dev.detpikachu.structurebounds.render;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBundlePacket;
 import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.ApiStatus;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -16,6 +20,8 @@ import static dev.detpikachu.structurebounds.StructureBounds.logDebug;
 
 @ApiStatus.Internal
 public final class DrawnDisplays {
+
+    private static final int MAX_PACKETS_PER_BUNDLE = 2048;
 
     private final Map<DisplayKey, IntList> shown = new HashMap<>();
 
@@ -64,6 +70,7 @@ public final class DrawnDisplays {
     }
 
     private void spawnMissing(ServerPlayer handle, List<DisplayKey> selected) {
+        final var pending = new ArrayList<Packet<? super ClientGamePacketListener>>();
         var spawned = 0;
 
         for (final var key : selected) {
@@ -75,14 +82,20 @@ public final class DrawnDisplays {
             final var ids = new IntArrayList(displays.size());
 
             for (final var display : displays) {
-                handle.connection.send(display.addPacket());
-                handle.connection.send(display.dataPacket());
+                pending.add(display.addPacket());
+                pending.add(display.dataPacket());
                 ids.add(display.entityId());
             }
 
             this.shown.put(key, ids);
             spawned++;
+
+            if (pending.size() >= MAX_PACKETS_PER_BUNDLE) {
+                sendBundle(handle, pending);
+            }
         }
+
+        sendBundle(handle, pending);
 
         if (spawned > 0) {
             logDebug(
@@ -91,6 +104,15 @@ public final class DrawnDisplays {
                     spawned,
                     this.shown.size());
         }
+    }
+
+    private static void sendBundle(ServerPlayer handle, List<Packet<? super ClientGamePacketListener>> pending) {
+        if (pending.isEmpty()) {
+            return;
+        }
+
+        handle.connection.send(new ClientboundBundlePacket(List.copyOf(pending)));
+        pending.clear();
     }
 
     private static List<SpawnedDisplay> build(ServerLevel level, DisplayKey key) {

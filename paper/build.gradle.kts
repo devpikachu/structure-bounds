@@ -71,7 +71,8 @@ spotless {
 }
 
 tasks.withType<JavaCompile>().configureEach {
-    options.compilerArgs.add("-Werror")
+    options.encoding = "UTF-8"
+    options.compilerArgs.addAll(listOf("-Xlint:all", "-Werror"))
     options.errorprone {
         disableWarningsInGeneratedCode = true
 

@@ -1,7 +1,9 @@
 package dev.detpikachu.structurebounds.render;
 
+import dev.detpikachu.structurebounds.StructureBounds;
 import dev.detpikachu.structurebounds.config.Options;
 import dev.detpikachu.structurebounds.player.PlayerSettings;
+import dev.detpikachu.structurebounds.scan.Scan;
 import dev.detpikachu.structurebounds.scan.ScannedStructure;
 import dev.detpikachu.structurebounds.scan.StructureScanner;
 import net.minecraft.resources.ResourceKey;
@@ -23,12 +25,16 @@ import static net.kyori.adventure.text.format.NamedTextColor.GRAY;
 @ApiStatus.Internal
 public final class BoundsSession {
 
+    private static final int MIN_REFRESH_INTERVAL_TICKS = 3;
+
     private final DrawnDisplays drawn = new DrawnDisplays();
 
     private @Nullable ScannedStructure held;
     private @Nullable ResourceKey<Level> lastWorld;
     private @Nullable PlayerSettings lastSettings;
     private long lastChunk = ChunkPos.INVALID_CHUNK_POS;
+    private int lastRefreshTick = -MIN_REFRESH_INTERVAL_TICKS;
+    private boolean isRadiusComplete;
     private boolean wasTruncated;
     private boolean isRefreshScheduled;
 
@@ -40,13 +46,9 @@ public final class BoundsSession {
         if (!world.equals(this.lastWorld)) {
             logDebug("Bounds for {} rebuilding from scratch in {}.", handle.getScoreboardName(), world.identifier());
             this.reset();
-        } else if (chunk == this.lastChunk && settings.equals(this.lastSettings)) {
+        } else if (chunk == this.lastChunk && settings.equals(this.lastSettings) && this.isRadiusComplete) {
             return;
         }
-
-        this.lastWorld = world;
-        this.lastChunk = chunk;
-        this.lastSettings = settings;
 
         logDebug(
                 "Bounds pass for {} at chunk {}, threshold {}, all boxes {}, labels {}.",
@@ -56,7 +58,15 @@ public final class BoundsSession {
                 settings.showAllBoxes(),
                 settings.showLabels());
 
-        this.draw(player, handle, settings);
+        final var scan = this.scanOrRetained(handle);
+
+        this.draw(player, handle, settings, scan);
+
+        this.lastWorld = world;
+        this.lastChunk = chunk;
+        this.lastSettings = settings;
+        this.isRadiusComplete = scan.isRadiusComplete();
+        this.lastRefreshTick = currentTick();
     }
 
     public IsolateOutcome isolate(Player player) {
@@ -68,7 +78,7 @@ public final class BoundsSession {
         }
 
         final var handle = ((CraftPlayer) player).getHandle();
-        final var containing = StructureScanner.scan(handle).stream()
+        final var containing = StructureScanner.scan(handle).structures().stream()
                 .filter(structure -> structure.bounds().isInside(handle.blockPosition()))
                 .toList();
 
@@ -83,9 +93,17 @@ public final class BoundsSession {
     }
 
     public boolean claimRefresh(Location destination) {
+        if (this.isRefreshScheduled) {
+            return false;
+        }
+
         final var chunk = chunkKey(destination.getBlockX(), destination.getBlockZ());
 
-        if (this.isRefreshScheduled || chunk == this.lastChunk) {
+        if (chunk == this.lastChunk && this.isRadiusComplete) {
+            return false;
+        }
+
+        if (currentTick() - this.lastRefreshTick < MIN_REFRESH_INTERVAL_TICKS) {
             return false;
         }
 
@@ -109,6 +127,7 @@ public final class BoundsSession {
         this.lastWorld = null;
         this.lastSettings = null;
         this.lastChunk = ChunkPos.INVALID_CHUNK_POS;
+        this.isRadiusComplete = false;
         this.wasTruncated = false;
     }
 
@@ -116,10 +135,14 @@ public final class BoundsSession {
         return ChunkPos.asLong(blockX >> 4, blockZ >> 4);
     }
 
-    private void draw(Player player, ServerPlayer handle, PlayerSettings settings) {
+    private static int currentTick() {
+        return StructureBounds.getInstance().getServer().getCurrentTick();
+    }
+
+    private void draw(Player player, ServerPlayer handle, PlayerSettings settings, Scan scan) {
         final var budget = Options.getInstance().getMaxBoxesPerPlayer();
         final var selection =
-                BoxSelector.select(this.structures(handle), settings, budget, this.held != null, handle.position());
+                BoxSelector.select(scan.structures(), settings, budget, this.held != null, handle.position());
 
         logDebug(
                 "Bounds for {}: {} box(es) wanted, {} drawn of a {} budget, {} label(s).",
@@ -138,13 +161,13 @@ public final class BoundsSession {
         this.wasTruncated = selection.isTruncated();
     }
 
-    private List<ScannedStructure> structures(ServerPlayer handle) {
+    private Scan scanOrRetained(ServerPlayer handle) {
         final var held = this.held;
 
         if (held == null) {
             return StructureScanner.scan(handle);
         }
 
-        return List.of(StructureScanner.sortPieces(held, handle.position()));
+        return new Scan(List.of(StructureScanner.sortPieces(held, handle.position())), true);
     }
 }

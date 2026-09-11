@@ -134,9 +134,11 @@ publish_file() {
 
     # -T streams the file, and no Content-Type is sent: the server derives it from the name. mkdir is asked for
     # explicitly so a token without the grant fails as a 403 rather than a bare 404 on the version directory.
-    if ! status="$(curl --fail-with-body -sS -T "${stage}/${name}" \
-        -H "Authorization: Bearer ${ARTIFACTS_TOKEN}" \
-        -H "Checksum-SHA256: ${digest}" \
+    # Both headers are piped into -H @- rather than passed as arguments, so the token never lands in the
+    # world-readable /proc/<pid>/cmdline. -T still takes the body from the file, leaving stdin free.
+    if ! status="$(printf 'Authorization: Bearer %s\nChecksum-SHA256: %s\n' "$ARTIFACTS_TOKEN" "$digest" \
+        | curl --fail-with-body -sS -T "${stage}/${name}" \
+        -H @- \
         -o "$response_file" -w '%{http_code}' \
         "${artifacts_api}/_/api/v1/artifacts/${path}?mkdir=1")"; then
         printf 'error: publishing %s failed\n' "$path" >&2

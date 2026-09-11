@@ -1,6 +1,8 @@
 package dev.detpikachu.structurebounds.scan;
 
 import dev.detpikachu.structurebounds.config.Options;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -19,8 +21,9 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static dev.detpikachu.structurebounds.StructureBounds.logDebug;
@@ -28,16 +31,20 @@ import static dev.detpikachu.structurebounds.StructureBounds.logDebug;
 @ApiStatus.Internal
 public final class StructureScanner {
 
-    public static List<ScannedStructure> scan(ServerPlayer handle) {
+    public static Scan scan(ServerPlayer handle) {
         final var level = handle.level();
         final var position = handle.position();
         final var centerChunk = handle.chunkPosition();
         final var radius = Options.getInstance().getScanRadiusChunks();
         final var starts = new LinkedHashSet<StructureStart>();
+        final var resolved = new HashMap<Structure, LongSet>();
+        var isRadiusComplete = true;
 
         for (var chunkX = centerChunk.x - radius; chunkX <= centerChunk.x + radius; chunkX++) {
             for (var chunkZ = centerChunk.z - radius; chunkZ <= centerChunk.z + radius; chunkZ++) {
-                collectFromChunk(level, chunkX, chunkZ, starts);
+                if (!collectFromChunk(level, chunkX, chunkZ, resolved, starts)) {
+                    isRadiusComplete = false;
+                }
             }
         }
 
@@ -47,13 +54,14 @@ public final class StructureScanner {
                 .toList();
 
         logDebug(
-                "Scan for {} at chunk {} within {} chunk(s) found {} structure(s).",
+                "Scan for {} at chunk {} within {} chunk(s) found {} structure(s), radius complete {}.",
                 handle.getScoreboardName(),
                 centerChunk,
                 radius,
-                scanned.size());
+                scanned.size(),
+                isRadiusComplete);
 
-        return scanned;
+        return new Scan(scanned, isRadiusComplete);
     }
 
     public static ScannedStructure sortPieces(ScannedStructure structure, Vec3 position) {
@@ -64,27 +72,40 @@ public final class StructureScanner {
         return new ScannedStructure(structure.bounds(), sorted);
     }
 
-    private static void collectFromChunk(ServerLevel level, int chunkX, int chunkZ, Set<StructureStart> starts) {
+    private static boolean collectFromChunk(
+            ServerLevel level, int chunkX, int chunkZ, Map<Structure, LongSet> resolved, Set<StructureStart> starts) {
         final var chunk = level.getChunk(chunkX, chunkZ, ChunkStatus.STRUCTURE_REFERENCES, false);
 
         if (chunk == null) {
-            return;
+            return false;
         }
+
+        var isComplete = true;
 
         for (final var references : chunk.getAllReferences().entrySet()) {
-            for (final var packedChunkPos : references.getValue()) {
-                resolveStart(level, references.getKey(), packedChunkPos, starts);
+            final var structure = references.getKey();
+            final var seen = resolved.computeIfAbsent(structure, key -> new LongOpenHashSet());
+            final var positions = references.getValue().iterator();
+
+            while (positions.hasNext()) {
+                final var packedChunkPosition = positions.nextLong();
+
+                if (seen.add(packedChunkPosition) && !resolveStart(level, structure, packedChunkPosition, starts)) {
+                    isComplete = false;
+                }
             }
         }
+
+        return isComplete;
     }
 
-    private static void resolveStart(
-            ServerLevel level, Structure structure, long packedChunkPos, Set<StructureStart> starts) {
-        final var chunkPos = new ChunkPos(packedChunkPos);
-        final var chunk = level.getChunk(chunkPos.x, chunkPos.z, ChunkStatus.STRUCTURE_STARTS, false);
+    private static boolean resolveStart(
+            ServerLevel level, Structure structure, long packedChunkPosition, Set<StructureStart> starts) {
+        final var startChunk = new ChunkPos(packedChunkPosition);
+        final var chunk = level.getChunk(startChunk.x, startChunk.z, ChunkStatus.STRUCTURE_STARTS, false);
 
         if (chunk == null) {
-            return;
+            return false;
         }
 
         final var start = chunk.getStartForStructure(structure);
@@ -92,6 +113,8 @@ public final class StructureScanner {
         if (start != null && start.isValid()) {
             starts.add(start);
         }
+
+        return true;
     }
 
     private static ScannedStructure toScannedStructure(StructureStart start, Vec3 position) {
@@ -132,10 +155,9 @@ public final class StructureScanner {
     }
 
     private static double distanceSquared(Vec3 position, BoundingBox bounds) {
-        final var center = bounds.getCenter();
-        final var deltaX = center.getX() - position.x;
-        final var deltaY = center.getY() - position.y;
-        final var deltaZ = center.getZ() - position.z;
+        final var deltaX = bounds.minX() + bounds.getXSpan() / 2.0 - position.x;
+        final var deltaY = bounds.minY() + bounds.getYSpan() / 2.0 - position.y;
+        final var deltaZ = bounds.minZ() + bounds.getZSpan() / 2.0 - position.z;
 
         return deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
     }

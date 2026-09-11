@@ -89,6 +89,11 @@ public final class BoxSelector {
     @ApiStatus.Internal
     public record Selection(List<BoxKey> boxes, List<LabelKey> labels, int wantedCount, boolean isTruncated) {
 
+        public Selection {
+            boxes = List.copyOf(boxes);
+            labels = List.copyOf(labels);
+        }
+
         public List<DisplayKey> displays() {
             final var displays = new ArrayList<DisplayKey>(this.boxes.size() + this.labels.size());
 

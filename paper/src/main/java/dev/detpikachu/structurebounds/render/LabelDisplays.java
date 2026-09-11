@@ -42,8 +42,8 @@ public final class LabelDisplays {
 
     private static Vec3 anchor(BoundingBox bounds) {
         return new Vec3(
-                bounds.minX() + (bounds.maxX() - bounds.minX() + 1) / 2.0,
+                bounds.minX() + bounds.getXSpan() / 2.0,
                 bounds.maxY() + 1 + LIFT,
-                bounds.minZ() + (bounds.maxZ() - bounds.minZ() + 1) / 2.0);
+                bounds.minZ() + bounds.getZSpan() / 2.0);
     }
 }

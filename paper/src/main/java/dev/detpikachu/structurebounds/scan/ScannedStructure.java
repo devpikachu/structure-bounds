@@ -9,6 +9,10 @@ import java.util.List;
 @ApiStatus.Internal
 public record ScannedStructure(BoundingBox bounds, List<Piece> pieces) {
 
+    public ScannedStructure {
+        pieces = List.copyOf(pieces);
+    }
+
     @ApiStatus.Internal
     public record Piece(
             BoundingBox bounds, boolean isStart, @Nullable String name) {}

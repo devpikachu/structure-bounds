@@ -41,6 +41,7 @@ public final class StructureBounds extends JavaPlugin {
         Options.deserialize(this.getConfig());
 
         this.registerListeners();
+        this.reconcileOnlinePlayers();
 
         this.logStartupSummary();
     }
@@ -55,6 +56,12 @@ public final class StructureBounds extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new PaperListener(), this);
         this.getLifecycleManager()
                 .registerEventHandler(LifecycleEvents.COMMANDS, commands -> CommandTree.register(commands.registrar()));
+    }
+
+    private void reconcileOnlinePlayers() {
+        for (final var player : this.getServer().getOnlinePlayers()) {
+            BoundsManager.reconcile(player);
+        }
     }
 
     private void logStartupSummary() {

@@ -29,18 +29,6 @@ public final class Options extends OptionsBase {
         return INSTANCE;
     }
 
-    public boolean isDebug() {
-        return this.isDebug;
-    }
-
-    public int getScanRadiusChunks() {
-        return this.scanRadiusChunks;
-    }
-
-    public int getMaxBoxesPerPlayer() {
-        return this.maxBoxesPerPlayer;
-    }
-
     public static void deserialize(FileConfiguration config) {
         INSTANCE.isDebug = config.getBoolean(KEY_DEBUG, DEFAULT_DEBUG);
         INSTANCE.scanRadiusChunks = inRange(
@@ -55,5 +43,17 @@ public final class Options extends OptionsBase {
                 DEFAULT_MAX_BOXES_PER_PLAYER,
                 MIN_MAX_BOXES_PER_PLAYER,
                 MAX_MAX_BOXES_PER_PLAYER);
+    }
+
+    public boolean isDebug() {
+        return this.isDebug;
+    }
+
+    public int getScanRadiusChunks() {
+        return this.scanRadiusChunks;
+    }
+
+    public int getMaxBoxesPerPlayer() {
+        return this.maxBoxesPerPlayer;
     }
 }
