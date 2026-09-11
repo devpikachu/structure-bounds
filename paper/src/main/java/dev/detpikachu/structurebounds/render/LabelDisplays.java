@@ -28,7 +28,12 @@ public final class LabelDisplays {
 
     public static SpawnedDisplay build(ServerLevel level, LabelKey key) {
         final var anchor = anchor(key.bounds());
+        // #if MC_26_2
+        // $$ final var display = new Display.TextDisplay(
+        // $$         net.minecraft.world.entity.EntityTypes.TEXT_DISPLAY, level);
+        // #else
         final var display = new Display.TextDisplay(EntityType.TEXT_DISPLAY, level);
+        // #endif
 
         display.setPos(anchor.x, anchor.y, anchor.z);
         display.setText(Component.literal(key.text()));

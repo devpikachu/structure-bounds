@@ -2,6 +2,9 @@
 java = "25"
 minecraft = "1.21.11"
 
+paper-v2612 = "26.1.2.build.74-stable"
+paper-v262 = "26.2.build.123-stable"
+
 errorprone = "2.50.0"
 nullaway = "0.14.0"
 jspecify = "1.0.1"

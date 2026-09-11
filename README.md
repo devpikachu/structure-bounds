@@ -23,16 +23,20 @@ ends, where a mineshaft runs, and exactly which pieces the world generator place
 
 ## Requirements
 
-The plugin needs Paper, or a fork of it, and reaches into the server's own internals, so it is not guaranteed to work on
-other releases. Anything outside this table is best-effort and logged on startup.
+The plugin needs Paper, or a fork of it, and reaches into the server's own internals. Each JAR is built against one
+Minecraft version and named for it, so give the server the JAR that matches. Anything outside this table is best-effort
+and logged on startup.
 
-| Structure Bounds | Minecraft |
-|------------------|-----------|
-| 0.1.0+           | 1.21.11   |
+| JAR                                      | Minecraft | Java        |
+|------------------------------------------|-----------|-------------|
+| `structure-bounds-1.21.11-<version>.jar` | 1.21.11   | 21 or newer |
+| `structure-bounds-26.1.2-<version>.jar`  | 26.1.2    | 25 or newer |
+| `structure-bounds-26.2-<version>.jar`    | 26.2      | 25 or newer |
 
 ## Installation
 
-Drop `structure-bounds-<version>.jar` into the server's `plugins/` directory and restart.
+Drop the JAR for your server's Minecraft version, from the table above, into the server's `plugins/` directory and
+restart.
 
 ## Commands
 

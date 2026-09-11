@@ -132,7 +132,11 @@ public final class BoundsSession {
     }
 
     private static long chunkKey(int blockX, int blockZ) {
+        // #if MC_26
+        // $$ return ChunkPos.pack(blockX >> 4, blockZ >> 4);
+        // #else
         return ChunkPos.asLong(blockX >> 4, blockZ >> 4);
+        // #endif
     }
 
     private static int currentTick() {

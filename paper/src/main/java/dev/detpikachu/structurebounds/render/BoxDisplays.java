@@ -111,7 +111,12 @@ public final class BoxDisplays {
 
     private static SpawnedDisplay edge(
             ServerLevel level, BoxKey key, float viewRange, Vec3 center, Transformation transform) {
+        // #if MC_26_2
+        // $$ final var display = new Display.BlockDisplay(
+        // $$         net.minecraft.world.entity.EntityTypes.BLOCK_DISPLAY, level);
+        // #else
         final var display = new Display.BlockDisplay(EntityType.BLOCK_DISPLAY, level);
+        // #endif
 
         display.setPos(center.x, center.y, center.z);
         display.setBlockState(key.color().getBlockState());

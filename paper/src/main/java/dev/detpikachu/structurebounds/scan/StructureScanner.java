@@ -40,8 +40,16 @@ public final class StructureScanner {
         final var resolved = new HashMap<Structure, LongSet>();
         var isRadiusComplete = true;
 
-        for (var chunkX = centerChunk.x - radius; chunkX <= centerChunk.x + radius; chunkX++) {
-            for (var chunkZ = centerChunk.z - radius; chunkZ <= centerChunk.z + radius; chunkZ++) {
+        // #if MC_26
+        // $$ final var centerChunkX = centerChunk.x();
+        // $$ final var centerChunkZ = centerChunk.z();
+        // #else
+        final var centerChunkX = centerChunk.x;
+        final var centerChunkZ = centerChunk.z;
+        // #endif
+
+        for (var chunkX = centerChunkX - radius; chunkX <= centerChunkX + radius; chunkX++) {
+            for (var chunkZ = centerChunkZ - radius; chunkZ <= centerChunkZ + radius; chunkZ++) {
                 if (!collectFromChunk(level, chunkX, chunkZ, resolved, starts)) {
                     isRadiusComplete = false;
                 }
@@ -101,8 +109,11 @@ public final class StructureScanner {
 
     private static boolean resolveStart(
             ServerLevel level, Structure structure, long packedChunkPosition, Set<StructureStart> starts) {
-        final var startChunk = new ChunkPos(packedChunkPosition);
-        final var chunk = level.getChunk(startChunk.x, startChunk.z, ChunkStatus.STRUCTURE_STARTS, false);
+        final var chunk = level.getChunk(
+                ChunkPos.getX(packedChunkPosition),
+                ChunkPos.getZ(packedChunkPosition),
+                ChunkStatus.STRUCTURE_STARTS,
+                false);
 
         if (chunk == null) {
             return false;
