@@ -54,6 +54,10 @@ tasks {
             expand(props)
         }
     }
+
+    compileJava {
+        options.release = 21
+    }
 }
 
 spotless {

@@ -1,6 +1,5 @@
 package dev.detpikachu.structurebounds.player;
 
-import dev.detpikachu.structurebounds.StructureBounds;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataType;
@@ -16,13 +15,12 @@ public record PlayerSettings(boolean isEnabled, int boxThreshold, boolean showAl
     private static final boolean DEFAULT_SHOW_ALL_BOXES = false;
     private static final boolean DEFAULT_SHOW_LABELS = true;
 
-    private static final NamespacedKey KEY_ENABLED = new NamespacedKey(StructureBounds.getInstance(), "enabled");
-    private static final NamespacedKey KEY_BOX_THRESHOLD =
-            new NamespacedKey(StructureBounds.getInstance(), "box-threshold");
-    private static final NamespacedKey KEY_SHOW_ALL_BOXES =
-            new NamespacedKey(StructureBounds.getInstance(), "show-all-boxes");
-    private static final NamespacedKey KEY_SHOW_LABELS =
-            new NamespacedKey(StructureBounds.getInstance(), "show-labels");
+    private static final String NAMESPACE = "structure-bounds";
+
+    private static final NamespacedKey KEY_ENABLED = new NamespacedKey(NAMESPACE, "enabled");
+    private static final NamespacedKey KEY_BOX_THRESHOLD = new NamespacedKey(NAMESPACE, "box-threshold");
+    private static final NamespacedKey KEY_SHOW_ALL_BOXES = new NamespacedKey(NAMESPACE, "show-all-boxes");
+    private static final NamespacedKey KEY_SHOW_LABELS = new NamespacedKey(NAMESPACE, "show-labels");
 
     public static PlayerSettings load(Player player) {
         final var container = player.getPersistentDataContainer();
