@@ -15,21 +15,20 @@ import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.GRAY;
 
 @ApiStatus.Internal
-public final class PlayerBoundsShowLabelsCommand {
+public final class PlayerBoundsShowLabelNamesCommand {
 
-    private static final String CMD_SHOW_LABELS = "show-labels";
+    private static final String CMD_NAMES = "names";
 
     public static LiteralArgumentBuilder<CommandSourceStack> construct() {
-        return Commands.literal(CMD_SHOW_LABELS)
-                .executes(PlayerBoundsShowLabelsCommand::execute)
-                .then(PlayerBoundsShowLabelNamesCommand.construct());
+        return Commands.literal(CMD_NAMES).executes(PlayerBoundsShowLabelNamesCommand::execute);
     }
 
     private static int execute(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         final var player = requireExecutor(context);
         final var settings = PlayerSettings.load(player);
-        final var updated = settings.withShowLabels(!settings.showLabels());
-        final var message = updated.showLabels() ? "Piece IDs are shown." : "Piece IDs are hidden.";
+        final var updated = settings.withShowLabelNames(!settings.showLabelNames());
+        final var message =
+                updated.showLabelNames() ? "Piece friendly names are shown." : "Piece friendly names are hidden.";
 
         requireRefreshReady(player, updated);
         BoundsManager.apply(player, updated);

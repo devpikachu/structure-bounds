@@ -1,5 +1,6 @@
 package dev.detpikachu.structurebounds.render;
 
+import dev.detpikachu.structurebounds.config.PieceNames;
 import dev.detpikachu.structurebounds.player.PlayerSettings;
 import dev.detpikachu.structurebounds.scan.ScannedStructure;
 import net.minecraft.world.phys.Vec3;
@@ -51,7 +52,7 @@ public final class BoxSelector {
 
         for (final var structure : structures) {
             for (final var piece : shownPieces(structure, settings)) {
-                final var label = labelFor(piece, position);
+                final var label = labelFor(piece, settings, position);
 
                 if (label != null && drawn.contains(pieceKey(piece))) {
                     labels.add(label);
@@ -62,14 +63,26 @@ public final class BoxSelector {
         return labels;
     }
 
-    private static @Nullable LabelKey labelFor(ScannedStructure.Piece piece, Vec3 position) {
-        final var name = piece.name();
+    private static @Nullable LabelKey labelFor(ScannedStructure.Piece piece, PlayerSettings settings, Vec3 position) {
+        final var id = piece.id();
 
-        if (name == null || !LabelDisplays.isLegible(piece.bounds(), position)) {
+        if (id == null || !LabelDisplays.isLegible(piece.bounds(), position)) {
             return null;
         }
 
-        return new LabelKey(piece.bounds(), name);
+        return new LabelKey(piece.bounds(), labelText(id, settings));
+    }
+
+    private static String labelText(String id, PlayerSettings settings) {
+        final var shortId = id.substring(id.lastIndexOf('/') + 1);
+
+        if (!settings.showLabelNames()) {
+            return shortId;
+        }
+
+        final var name = PieceNames.getInstance().find(id, shortId);
+
+        return name == null ? shortId : shortId + "\n" + name;
     }
 
     private static BoxKey pieceKey(ScannedStructure.Piece piece) {

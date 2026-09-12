@@ -10,6 +10,10 @@ tags the release; pushing that tag makes CI publish the section as the GitHub re
 
 ## [Unreleased]
 
+- **26.1.2 and 26.2 support:** the plugin now supports Minecraft versions 26.1.2 and 26.2.
+- **Friendly legacy piece names:** legacy pieces will now show a configurable friendly name, in addition to the internal
+  ID.
+
 ## [0.1.0] - 2026-08-28
 
 ### Added

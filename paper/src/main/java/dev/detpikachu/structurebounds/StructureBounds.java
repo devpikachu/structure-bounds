@@ -3,14 +3,17 @@ package dev.detpikachu.structurebounds;
 import dev.detpikachu.structurebounds.commands.CommandCooldown;
 import dev.detpikachu.structurebounds.commands.CommandTree;
 import dev.detpikachu.structurebounds.config.Options;
+import dev.detpikachu.structurebounds.config.PieceNames;
 import dev.detpikachu.structurebounds.listeners.PaperListener;
 import dev.detpikachu.structurebounds.render.BoundsManager;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.Nullable;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
@@ -40,6 +43,8 @@ public final class StructureBounds extends JavaPlugin {
         this.saveDefaultConfig();
         Options.deserialize(this.getConfig());
 
+        this.loadPieceNames();
+
         this.registerListeners();
         this.reconcileOnlinePlayers();
 
@@ -50,6 +55,14 @@ public final class StructureBounds extends JavaPlugin {
     public void onDisable() {
         BoundsManager.stop();
         CommandCooldown.dropAll();
+    }
+
+    private void loadPieceNames() {
+        this.saveResource(PieceNames.RESOURCE, false);
+
+        final var file = new File(this.getDataFolder(), PieceNames.RESOURCE);
+
+        PieceNames.deserialize(YamlConfiguration.loadConfiguration(file));
     }
 
     private void registerListeners() {

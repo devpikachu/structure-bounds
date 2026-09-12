@@ -46,7 +46,8 @@ restart.
 | `/bounds all-pieces`         | Draws every piece whatever the `max-pieces` limit, or applies it again     | `structure-bounds.use` |
 | `/bounds isolate`            | Keeps only the structure you are standing in, or clears the hold           | `structure-bounds.use` |
 | `/bounds max-pieces <count>` | Sets how many pieces one structure may draw, up to `max-boxes-per-player`  | `structure-bounds.use` |
-| `/bounds show-labels`        | Draws each piece's name above it, or hides them                            | `structure-bounds.use` |
+| `/bounds show-labels`        | Draws the label above each piece, or hides them                            | `structure-bounds.use` |
+| `/bounds show-labels names`  | Adds the friendly name under each piece's ID, or removes it                | `structure-bounds.use` |
 
 A command that redraws is limited to one every two seconds, and refuses with a message until the wait is out. Hiding the
 outlines is never refused.

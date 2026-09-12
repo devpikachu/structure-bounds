@@ -15,5 +15,5 @@ public record ScannedStructure(BoundingBox bounds, List<Piece> pieces) {
 
     @ApiStatus.Internal
     public record Piece(
-            BoundingBox bounds, boolean isStart, @Nullable String name) {}
+            BoundingBox bounds, boolean isStart, @Nullable String id) {}
 }

@@ -4,7 +4,6 @@ import dev.detpikachu.structurebounds.config.Options;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
@@ -134,35 +133,29 @@ public final class StructureScanner {
 
         for (var i = 0; i < pieces.size(); i++) {
             final var piece = pieces.get(i);
-            described.add(new ScannedStructure.Piece(piece.getBoundingBox(), i == 0, pieceName(piece)));
+            described.add(new ScannedStructure.Piece(piece.getBoundingBox(), i == 0, pieceId(piece)));
         }
 
         return sortPieces(new ScannedStructure(start.getBoundingBox(), described), position);
     }
 
-    private static @Nullable String pieceName(StructurePiece piece) {
+    private static @Nullable String pieceId(StructurePiece piece) {
         if (piece instanceof PoolElementStructurePiece pool) {
-            return pool.getElement() instanceof SinglePoolElement single ? templateName(single) : null;
+            return pool.getElement() instanceof SinglePoolElement single ? templateId(single) : null;
         }
 
         final var type = BuiltInRegistries.STRUCTURE_PIECE.getKey(piece.getType());
 
-        return type == null ? null : shortName(type);
+        return type == null ? null : type.getPath();
     }
 
-    private static @Nullable String templateName(SinglePoolElement element) {
+    private static @Nullable String templateId(SinglePoolElement element) {
         try {
-            return shortName(element.getTemplateLocation());
+            return element.getTemplateLocation().getPath();
         } catch (RuntimeException exception) {
             logDebug("Skipped a piece name for a pool element holding an inline template.", exception);
             return null;
         }
-    }
-
-    private static String shortName(Identifier identifier) {
-        final var path = identifier.getPath();
-
-        return path.substring(path.lastIndexOf('/') + 1);
     }
 
     private static double distanceSquared(Vec3 position, BoundingBox bounds) {
