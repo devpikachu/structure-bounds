@@ -10,6 +10,8 @@ tags the release; pushing that tag makes CI publish the section as the GitHub re
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-12
+
 - **26.1.2 and 26.2 support:** the plugin now supports Minecraft versions 26.1.2 and 26.2.
 - **Friendly legacy piece names:** legacy pieces will now show a configurable friendly name, in addition to the internal
   ID.
@@ -20,5 +22,6 @@ tags the release; pushing that tag makes CI publish the section as the GitHub re
 
 - **Initial release:** the initial version of the plugin.
 
-[unreleased]: https://github.com/devpikachu/structure-bounds/compare/v0.1.0...HEAD
+[unreleased]: https://github.com/devpikachu/structure-bounds/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/devpikachu/structure-bounds/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/devpikachu/structure-bounds/releases/tag/v0.1.0
